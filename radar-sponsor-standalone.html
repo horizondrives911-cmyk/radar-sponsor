@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radar Sponsor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: satu kolom sempit untuk HP. Header, status koneksi, 2 langkah, lalu hasil per brand. */
+  :root {
+    --bg: #f1f4f3;
+    --surface: #ffffff;
+    --line: #d3dbd8;
+    --fg: #13201d;
+    --muted: #586a65;
+    --accent: #0a6b63;
+    --accent-fg: #ffffff;
+    --ok: #1b7a3d;
+    --warn: #8f5b00;
+    --bad: #b3261e;
+    --font-display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1513; --surface: #151e1b; --line: #26332f; --fg: #e4ece9; --muted: #8fa39d;
+      --accent: #4fd1c5; --accent-fg: #06201d; --ok: #5ccb86; --warn: #e0aa3e; --bad: #f2766d;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1513; --surface: #151e1b; --line: #26332f; --fg: #e4ece9; --muted: #8fa39d;
+    --accent: #4fd1c5; --accent-fg: #06201d; --ok: #5ccb86; --warn: #e0aa3e; --bad: #f2766d;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+    padding-block: 20px 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  header { display: flex; align-items: center; gap: 12px; }
+  header svg { flex: none; }
+  h1 { font-family: var(--font-display); font-size: 26px; line-height: 1.1; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+  .sub { color: var(--muted); font-size: 13px; margin: 2px 0 0; }
+  h2 { font-family: var(--font-display); font-size: 17px; margin: 0; text-wrap: balance; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .note { color: var(--muted); font-size: 13px; margin: 0; }
+  label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 500; }
+  input[type="text"], input[type="password"], select {
+    width: 100%; font: inherit; font-family: var(--font-mono); font-size: 14px; color: var(--fg);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 11px 12px; min-width: 0;
+  }
+  input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible, a:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  button {
+    font: inherit; font-weight: 600; font-size: 14px; border-radius: 8px; padding: 10px 16px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--fg); min-height: 44px;
+  }
+  button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .status { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+  .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; background: var(--muted); }
+  .dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); } .dot.bad { background: var(--bad); }
+  .log { font-family: var(--font-mono); font-size: 12px; color: var(--muted); background: var(--bg); border: 1px solid var(--line);
+    border-radius: 8px; padding: 10px 12px; max-height: 180px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+  .bar { height: 6px; background: var(--bg); border: 1px solid var(--line); border-radius: 99px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  .stat b { display: block; font-family: var(--font-display); font-size: 24px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 12px; color: var(--muted); }
+  .brand { border-top: 1px solid var(--line); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .brand:first-of-type { border-top: 0; padding-top: 0; }
+  .brand-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .brand-name { font-family: var(--font-display); font-size: 18px; font-weight: 700; overflow-wrap: anywhere; }
+  .count { font-family: var(--font-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { font-size: 12px; border: 1px solid var(--line); border-radius: 99px; padding: 2px 10px; background: var(--bg); overflow-wrap: anywhere; }
+  .chip.code { font-family: var(--font-mono); color: var(--accent); border-color: var(--accent); }
+  .tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--warn); border: 1px solid var(--warn); border-radius: 4px; padding: 1px 6px; }
+  details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+  details ul { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+  details a { color: var(--accent); overflow-wrap: anywhere; }
+  .mono { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+  textarea { width: 100%; min-height: 120px; font-family: var(--font-mono); font-size: 12px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+  .check { font-size: 14px; }
+  .check.yes { color: var(--ok); } .check.no { color: var(--warn); }
+  @media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<style>[hidden]{display:none!important} html{color-scheme:light dark} body{margin:0}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="18" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+      <circle cx="20" cy="20" r="11" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+      <circle cx="20" cy="20" r="4" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+      <path d="M20 20 L34 9" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <circle cx="29" cy="14" r="2.5" fill="var(--accent)"/>
+    </svg>
+    <div>
+      <h1>Radar Sponsor</h1>
+      <p class="sub">Prototype. Cek brand apa saja yang pernah mensponsori sebuah channel YouTube.</p>
+    </div>
+  </header>
+
+  <section class="panel" aria-labelledby="h-test">
+    <h2 id="h-test">Tes 1. Apakah halaman ini bisa menghubungi Google?</h2>
+    <p class="note">Tombol ini memanggil YouTube Data API tanpa key. Jawaban "key ditolak" dari Google berarti koneksi berhasil.</p>
+    <div class="status" aria-live="polite"><span class="dot" id="conn-dot"></span><span id="conn-text">Belum dites.</span></div>
+    <div class="row"><button class="primary" id="btn-test" type="button">Tes koneksi</button></div>
+    <pre class="log" id="log" hidden></pre>
+  </section>
+
+  <section class="panel" aria-labelledby="h-key">
+    <h2 id="h-key">Tes 2. API key kamu</h2>
+    <p class="note">Key disimpan di browser ini saja. Daftar gratis di Google Cloud Console, aktifkan "YouTube Data API v3".</p>
+    <div class="field">
+      <label for="key">YouTube Data API key</label>
+      <input type="password" id="key" autocomplete="off" spellcheck="false" placeholder="Tempel key di sini">
+    </div>
+    <div class="row"><button id="btn-key" type="button">Simpan key</button><span class="note" id="key-msg"></span></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-scan">
+    <h2 id="h-scan">Scan channel</h2>
+    <div class="field">
+      <label for="channel">Link channel</label>
+      <input type="text" id="channel" autocomplete="off" spellcheck="false" inputmode="url" placeholder="youtube.com/@namachannel">
+    </div>
+    <div class="field">
+      <label for="limit">Jumlah video terbaru</label>
+      <select id="limit">
+        <option value="50">50 video (1 panggilan)</option>
+        <option value="200" selected>200 video</option>
+        <option value="500">500 video</option>
+        <option value="2000">2000 video</option>
+      </select>
+    </div>
+    <div class="row"><button class="primary" id="btn-scan" type="button">Scan</button></div>
+    <div class="bar" id="bar" hidden><i id="bar-fill"></i></div>
+    <p class="note" id="scan-msg" aria-live="polite"></p>
+  </section>
+
+  <section class="stats" aria-label="Ringkasan">
+    <div class="stat"><b id="s-brands">0</b><span>Brand</span></div>
+    <div class="stat"><b id="s-channels">0</b><span>Channel</span></div>
+    <div class="stat"><b id="s-videos">0</b><span>Video dipindai</span></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-res">
+    <div class="brand-head"><h2 id="h-res">Hasil per brand</h2><span class="tag" id="example-tag">Contoh data</span></div>
+    <div class="field">
+      <label for="q">Cek brand atau channel</label>
+      <input type="text" id="q" autocomplete="off" placeholder="Ketik nama brand">
+    </div>
+    <p class="check" id="check" aria-live="polite" hidden></p>
+    <div id="results"></div>
+    <div class="row">
+      <button id="btn-csv" type="button">Salin CSV</button>
+      <button id="btn-clear" type="button">Hapus hasil</button>
+    </div>
+    <textarea id="csv-box" hidden readonly aria-label="CSV"></textarea>
+  </section>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var store = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+  var API = 'https://www.googleapis.com/youtube/v3/';
+  var scans = [];
+  var EXAMPLES = [
+    { name: 'Northwind AI', channels: ['Channel Contoh A', 'Channel Contoh B'], codes: ['NORTH20'], videos: [{ title: 'Contoh video 1', date: '2026-10-01', id: '', channel: 'Channel Contoh A' }, { title: 'Contoh video 2', date: '2026-09-12', id: '', channel: 'Channel Contoh B' }] },
+    { name: 'Lumen Notes', channels: ['Channel Contoh A'], codes: [], videos: [{ title: 'Contoh video 3', date: '2026-08-20', id: '', channel: 'Channel Contoh A' }] }
+  ];
+
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  /* ---------- log dan status ---------- */
+  function log(line) {
+    var el = $('log'); el.hidden = false;
+    el.textContent += (el.textContent ? '\n' : '') + line;
+    el.scrollTop = el.scrollHeight;
+  }
+  function setConn(kind, text) { $('conn-dot').className = 'dot ' + kind; $('conn-text').textContent = text; }
+
+  /* ---------- panggilan API ---------- */
+  function api(path, params) {
+    var qs = Object.keys(params).map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); }).join('&');
+    var url = API + path + '?' + qs + '&key=' + encodeURIComponent($('key').value.trim());
+    return fetch(url).then(function (res) {
+      return res.json().then(function (data) {
+        if (!res.ok) {
+          var err = new Error((data && data.error && data.error.message) || ('HTTP ' + res.status));
+          err.status = res.status;
+          err.reason = data && data.error && data.error.errors && data.error.errors[0] && data.error.errors[0].reason;
+          throw err;
+        }
+        return data;
+      });
+    }, function () {
+      var err = new Error('Tidak bisa menghubungi googleapis.com');
+      err.network = true;
+      throw err;
+    });
+  }
+
+  /* ---------- Tes koneksi ---------- */
+  $('btn-test').addEventListener('click', function () {
+    $('log').textContent = ''; setConn('warn', 'Mengetes...');
+    log('Memanggil ' + API + 'channels (tanpa key)');
+    api('channels', { part: 'id', forHandle: '@YouTube' }).then(function () {
+      setConn('ok', 'Terhubung ke Google dan key (jika diisi) diterima.');
+      log('Respons 200 OK');
+    }).catch(function (e) {
+      if (e.network) {
+        setConn('bad', 'Diblokir. Halaman ini tidak bisa memanggil API Google langsung.');
+        log('Gagal: ' + e.message + '. Kemungkinan dibatasi oleh sandbox artifact.');
+      } else {
+        setConn('ok', 'Terhubung ke Google. Key belum valid atau belum diisi (itu normal untuk tes ini).');
+        log('Google menjawab: HTTP ' + (e.status || '?') + ' ' + (e.reason || '') + ' / ' + e.message);
+      }
+    });
+  });
+
+  /* ---------- Key ---------- */
+  var saved = store.get('radar_key'); if (saved) { $('key').value = saved; $('key-msg').textContent = 'Key tersimpan di browser ini.'; }
+  $('btn-key').addEventListener('click', function () {
+    store.set('radar_key', $('key').value.trim());
+    $('key-msg').textContent = $('key').value.trim() ? 'Tersimpan.' : 'Key kosong.';
+  });
+
+  /* ---------- Deteksi sponsor ---------- */
+  var SKIP = ['youtube', 'youtu', 'instagram', 'twitter', 'x', 'tiktok', 'facebook', 'patreon', 'discord', 'amzn', 'amazon', 'linkedin', 'google', 'goo', 'bit', 't', 'spotify', 'apple', 'twitch', 'threads', 'ko-fi', 'buymeacoffee', 'linktr', 'linktree', 'gmail', 'notion'];
+  var VERB = /(?:sponsored by|sponsor is|sponsor:|brought to you by|presented by|partnered with|in partnership with|thanks to|thank you to|thx to|disponsori oleh|didukung oleh|kerja ?sama dengan)\s*:?\s*(.+)/i;
+  var ADRE = /(#ad\b|#sponsored|#iklan|paid promotion|paid partnership|sponsor)/i;
+  var CODE = /(?:[Pp]romo\s*[Cc]ode|[Cc]oupon(?:\s*[Cc]ode)?|[Dd]iscount\s*[Cc]ode|[Kk]ode(?:\s*[Pp]romo)?|[Uu]se\s*[Cc]ode|[Ww]ith\s*[Cc]ode|[Cc]ode)\s*[:\-]?\s*["“']?([A-Z][A-Z0-9_]{2,19})\b/;
+  var STOP = /^(for|and|who|that|which|so|to|in|on|the|a|an|their|this|where|with|check|use|get|go|click|try|link|has|is|are)$/i;
+
+  function brandFromUrl(u) {
+    try {
+      var parts = new URL(u.replace(/[)\].,]+$/, '')).hostname.replace(/^www\./, '').split('.');
+      var name = (parts.length > 2 && (parts[parts.length - 2] === 'co' || parts[parts.length - 2] === 'com')) ? parts[parts.length - 3] : parts[parts.length - 2];
+      if (!name || SKIP.indexOf(name.toLowerCase()) >= 0) return null;
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    } catch (e) { return null; }
+  }
+  function cleanBrand(raw) {
+    raw = raw.replace(/https?:\S+/g, ' ').split(/[|—–,;:!?()\[\]"“”]|\s-\s|\.\s/)[0];
+    var tokens = raw.trim().split(/\s+/), out = [];
+    for (var i = 0; i < tokens.length; i++) {
+      var t = tokens[i];
+      if (out.length >= 3) break;
+      if (STOP.test(t)) { if (out.length) break; else continue; }
+      if (!/^[A-Z0-9@]/.test(t) && t.indexOf('.') < 0) break;
+      out.push(t);
+    }
+    var b = out.join(' ');
+    return (b.length >= 2 && b.length <= 40) ? b : null;
+  }
+  function urlsIn(line) { return line.match(/https?:\/\/\S+/g) || []; }
+
+  function analyze(desc) {
+    var lines = desc.split(/\r?\n/), found = {}, last = null;
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i], brand = null, code = null, m;
+      if ((m = VERB.exec(line))) brand = cleanBrand(m[1]);
+      if ((m = CODE.exec(line))) code = m[1];
+      var flagged = brand || code || ADRE.test(line);
+      if (!brand && flagged) {
+        var us = urlsIn(line), j;
+        for (j = 0; j < us.length && !brand; j++) brand = brandFromUrl(us[j]);
+        if (!brand && i + 1 < lines.length) { us = urlsIn(lines[i + 1]); for (j = 0; j < us.length && !brand; j++) brand = brandFromUrl(us[j]); }
+        if (!brand && code && last && i - last.i < 3) brand = last.brand;
+      }
+      if (brand) {
+        var key = brand.toLowerCase();
+        if (!found[key]) found[key] = { brand: brand, codes: [] };
+        if (code && found[key].codes.indexOf(code) < 0) found[key].codes.push(code);
+        last = { brand: brand, i: i };
+      }
+    }
+    return Object.keys(found).map(function (k) { return found[k]; });
+  }
+
+  /* ---------- Scan channel ---------- */
+  function parseChannel(input) {
+    var s = input.trim(), m;
+    if (!s) return null;
+    if ((m = s.match(/youtube\.com\/(@[^\/?#\s]+)/i))) return { forHandle: decodeURIComponent(m[1]) };
+    if ((m = s.match(/youtube\.com\/channel\/(UC[\w-]{20,})/i))) return { id: m[1] };
+    if ((m = s.match(/youtube\.com\/user\/([^\/?#\s]+)/i))) return { forUsername: m[1] };
+    if (/^@[\w.\-]+$/.test(s)) return { forHandle: s };
+    if (/^UC[\w-]{20,}$/.test(s)) return { id: s };
+    return null;
+  }
+
+  function scanChannel(ref, limit, onProgress) {
+    var p = { part: 'snippet,contentDetails,statistics' };
+    Object.keys(ref).forEach(function (k) { p[k] = ref[k]; });
+    return api('channels', p).then(function (ch) {
+      if (!ch.items || !ch.items.length) throw new Error('Channel tidak ditemukan.');
+      var c = ch.items[0], uploads = c.contentDetails.relatedPlaylists.uploads, videos = [];
+      function page(token) {
+        var q = { part: 'snippet', playlistId: uploads, maxResults: 50 };
+        if (token) q.pageToken = token;
+        return api('playlistItems', q).then(function (r) {
+          r.items.forEach(function (it) {
+            var sn = it.snippet;
+            videos.push({ id: sn.resourceId && sn.resourceId.videoId, title: sn.title, date: (sn.publishedAt || '').slice(0, 10), desc: sn.description || '' });
+          });
+          onProgress(Math.min(videos.length, limit), +c.statistics.videoCount || limit);
+          if (r.nextPageToken && videos.length < limit) return page(r.nextPageToken);
+        });
+      }
+      return page('').then(function () {
+        return { channel: { id: c.id, title: c.snippet.title }, videos: videos.slice(0, limit) };
+      });
+    });
+  }
+
+  $('btn-scan').addEventListener('click', function () {
+    var msg = $('scan-msg'), ref = parseChannel($('channel').value);
+    if (!$('key').value.trim()) { msg.textContent = 'Isi API key dulu.'; return; }
+    if (!ref) { msg.textContent = 'Link tidak dikenali. Pakai bentuk youtube.com/@namachannel atau link /channel/UC...'; return; }
+    var limit = +$('limit').value, btn = $('btn-scan');
+    btn.disabled = true; msg.textContent = 'Membaca channel...'; $('bar').hidden = false; $('bar-fill').style.width = '0';
+    scanChannel(ref, limit, function (n, total) {
+      var goal = Math.min(limit, total);
+      $('bar-fill').style.width = Math.min(100, Math.round(n / goal * 100)) + '%';
+      msg.textContent = 'Membaca video ' + n + ' dari ' + goal + '...';
+    }).then(function (r) {
+      var hits = [];
+      r.videos.forEach(function (v) {
+        analyze(v.desc).forEach(function (h) {
+          if (h.brand.toLowerCase() === r.channel.title.toLowerCase()) return;
+          hits.push({ brand: h.brand, codes: h.codes, video: { title: v.title, date: v.date, id: v.id, channel: r.channel.title } });
+        });
+      });
+      scans = scans.filter(function (s) { return s.channel.id !== r.channel.id; });
+      scans.push({ channel: r.channel, scanned: r.videos.length, hits: hits });
+      msg.textContent = 'Selesai. ' + r.channel.title + ': ' + r.videos.length + ' video dipindai, ' + hits.length + ' sponsor ditemukan.';
+      render();
+    }).catch(function (e) {
+      if (e.network) msg.textContent = 'Gagal. Halaman ini tidak bisa menghubungi Google. Jalankan Tes 1 untuk detail.';
+      else if (e.reason === 'quotaExceeded') msg.textContent = 'Kuota harian key ini habis. Coba lagi besok.';
+      else msg.textContent = 'Gagal: ' + e.message;
+    }).then(function () { btn.disabled = false; $('bar').hidden = true; });
+  });
+
+  /* ---------- Gabung per brand dan tampilkan ---------- */
+  function aggregate() {
+    var map = {};
+    scans.forEach(function (s) {
+      s.hits.forEach(function (h) {
+        var k = h.brand.toLowerCase();
+        var b = map[k] || (map[k] = { name: h.brand, channels: [], codes: [], videos: [] });
+        if (b.channels.indexOf(s.channel.title) < 0) b.channels.push(s.channel.title);
+        h.codes.forEach(function (c) { if (b.codes.indexOf(c) < 0) b.codes.push(c); });
+        b.videos.push(h.video);
+      });
+    });
+    return Object.keys(map).map(function (k) { return map[k]; }).sort(function (a, b) {
+      return (b.channels.length - a.channels.length) || (b.videos.length - a.videos.length) || a.name.localeCompare(b.name);
+    });
+  }
+
+  function getRows() { return scans.length ? aggregate() : EXAMPLES; }
+
+  function render() {
+    var isExample = !scans.length, rows = getRows(), q = $('q').value.trim().toLowerCase();
+    var shown = rows.filter(function (b) {
+      return !q || b.name.toLowerCase().indexOf(q) >= 0 || b.channels.some(function (c) { return c.toLowerCase().indexOf(q) >= 0; });
+    });
+    $('example-tag').hidden = !isExample;
+    $('s-brands').textContent = isExample ? 0 : rows.length;
+    $('s-channels').textContent = scans.length;
+    $('s-videos').textContent = scans.reduce(function (n, s) { return n + s.scanned; }, 0);
+
+    var chk = $('check');
+    if (q && !isExample) {
+      chk.hidden = false;
+      if (shown.length) { chk.className = 'check yes'; chk.textContent = 'Ditemukan: "' + $('q').value.trim() + '" cocok dengan ' + shown.length + ' brand atau channel.'; }
+      else { chk.className = 'check no'; chk.textContent = 'Belum ditemukan di channel yang sudah dipindai.'; }
+    } else chk.hidden = true;
+
+    $('results').innerHTML = shown.length ? shown.map(function (b) {
+      var vids = b.videos.slice().sort(function (x, y) { return y.date.localeCompare(x.date); });
+      return '<div class="brand"><div class="brand-head"><span class="brand-name">' + esc(b.name) + '</span>' +
+        '<span class="count">' + b.videos.length + ' video / ' + b.channels.length + ' channel</span></div>' +
+        '<div class="chips">' + b.channels.map(function (c) { return '<span class="chip">' + esc(c) + '</span>'; }).join('') +
+        b.codes.map(function (c) { return '<span class="chip code">kode ' + esc(c) + '</span>'; }).join('') + '</div>' +
+        '<details><summary>Lihat video</summary><ul>' + vids.map(function (v) {
+          var t = esc(v.date + ' ' + v.title);
+          return '<li>' + (v.id ? '<a href="https://www.youtube.com/watch?v=' + encodeURIComponent(v.id) + '" target="_blank" rel="noopener">' + t + '</a>' : t) + '</li>';
+        }).join('') + '</ul></details></div>';
+    }).join('') : '<p class="note">Tidak ada brand yang cocok.</p>';
+  }
+  $('q').addEventListener('input', render);
+
+  /* ---------- CSV dan hapus ---------- */
+  $('btn-csv').addEventListener('click', function () {
+    var rows = scans.length ? aggregate() : [];
+    var box = $('csv-box');
+    if (!rows.length) { box.hidden = false; box.value = 'Belum ada hasil scan.'; return; }
+    function q(s) { return '"' + String(s).replace(/"/g, '""') + '"'; }
+    var csv = ['brand,jumlah_video,channel,kode,video_terbaru'].concat(rows.map(function (b) {
+      var latest = b.videos.slice().sort(function (x, y) { return y.date.localeCompare(x.date); })[0];
+      return [q(b.name), b.videos.length, q(b.channels.join('; ')), q(b.codes.join('; ')), q(latest.id ? 'https://www.youtube.com/watch?v=' + latest.id : latest.title)].join(',');
+    })).join('\n');
+    box.value = csv; box.hidden = false;
+    function fallback() { box.focus(); box.select(); }
+    try { navigator.clipboard.writeText(csv).then(function () { $('scan-msg').textContent = 'CSV disalin.'; }, fallback); } catch (e) { fallback(); }
+  });
+  $('btn-clear').addEventListener('click', function () { scans = []; $('csv-box').hidden = true; $('scan-msg').textContent = ''; render(); });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
