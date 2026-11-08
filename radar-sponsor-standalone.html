@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sponsor Radar</title>
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #f1f4f3; --surface: #ffffff; --surface2: #e8eeec; --line: #d3dbd8;
+    --fg: #13201d; --muted: #586a65; --accent: #0a6b63; --accent-fg: #ffffff;
+    --accent-soft: #dcefec; --ok: #1b7a3d; --bad: #b3261e;
+    --display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
+    --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1513; --surface: #151e1b; --surface2: #1c2723; --line: #26332f;
+      --fg: #e4ece9; --muted: #8fa39d; --accent: #4fd1c5; --accent-fg: #06201d;
+      --accent-soft: #12302c; --ok: #5ccb86; --bad: #f2766d;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body);
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  .wrap { max-width: 720px; margin: 0 auto; min-width: 0; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+  .brandmark { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brandmark h1 { font: 700 22px/1.1 var(--display); margin: 0; letter-spacing: -0.01em; }
+  h2 { font: 700 22px/1.15 var(--display); margin: 0 0 4px; letter-spacing: -0.01em; text-wrap: balance; }
+  h3 { font: 700 16px/1.2 var(--display); margin: 0; }
+  .sub { color: var(--muted); font-size: 14px; margin: 0; }
+  .stack { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 500; }
+  input[type="text"], input[type="password"], input[type="search"], textarea, select {
+    width: 100%; font: 15px var(--body); color: var(--fg); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px; min-width: 0;
+  }
+  textarea { resize: vertical; font-family: var(--mono); font-size: 14px; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn {
+    font: 600 15px var(--body); border-radius: 10px; padding: 11px 16px; min-height: 46px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; text-align: center;
+  }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+  .btn.small { min-height: 38px; padding: 7px 12px; font-size: 13.5px; }
+  .btn.danger { color: var(--bad); }
+  .btn.armed { background: var(--bad); border-color: var(--bad); color: #fff; }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .seg { display: flex; background: var(--surface2); border-radius: 10px; padding: 3px; gap: 3px; }
+  .seg > * { flex: 1; text-align: center; padding: 9px 8px; border-radius: 8px; font: 600 14px var(--body); color: var(--muted); text-decoration: none; border: 0; background: transparent; cursor: pointer; min-height: 40px; }
+  .seg > [aria-pressed="true"], .seg > [aria-current="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 2px rgba(0,0,0,.18); }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-width: 0; }
+  .stat b { display: block; font: 700 24px/1.1 var(--display); font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 12px; color: var(--muted); }
+  .rows { display: flex; flex-direction: column; gap: 8px; }
+  details.item { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+  details.item > summary { list-style: none; display: flex; gap: 12px; align-items: center; padding: 12px 14px; cursor: pointer; min-height: 58px; }
+  details.item > summary::-webkit-details-marker { display: none; }
+  details.item > summary::after { content: ""; flex: none; width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); margin: 0 4px 3px 0; }
+  details.item[open] > summary::after { transform: rotate(-135deg); margin-bottom: -3px; }
+  .rank { flex: none; width: 34px; text-align: right; font: 600 15px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .rank.top { color: var(--accent); }
+  .main { flex: 1; min-width: 0; }
+  .name { font: 700 16px/1.25 var(--display); overflow-wrap: anywhere; }
+  .meta { font-size: 13px; color: var(--muted); }
+  .bar { height: 4px; background: var(--surface2); border-radius: 99px; margin-top: 7px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--accent); }
+  .bar.big { height: 8px; margin-top: 0; }
+  .detail { border-top: 1px solid var(--line); padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 12px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { display: inline-block; font-size: 13px; border: 1px solid var(--line); background: var(--bg); border-radius: 99px; padding: 3px 11px; color: var(--fg); text-decoration: none; overflow-wrap: anywhere; }
+  .chip.code { font-family: var(--mono); color: var(--accent); border-color: var(--accent); }
+  .lbl { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 6px; }
+  ul.vids { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+  ul.vids a { color: var(--accent); overflow-wrap: anywhere; }
+  ul.vids .d { display: block; font: 12px var(--mono); color: var(--muted); }
+  a { color: var(--accent); }
+  .av { position: relative; flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font: 700 18px var(--display); overflow: hidden; }
+  .av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  a.item-link { display: flex; gap: 12px; align-items: center; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; text-decoration: none; color: inherit; min-height: 64px; }
+  .empty { text-align: center; padding: 28px 12px; color: var(--muted); display: flex; flex-direction: column; gap: 12px; align-items: center; }
+  .empty b { color: var(--fg); font: 700 17px var(--display); }
+  .ok { color: var(--ok); } .bad { color: var(--bad); }
+  nav.tabs {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: flex;
+    background: var(--surface); border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);
+  }
+  nav.tabs a { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 60px; font-size: 12px; color: var(--muted); text-decoration: none; }
+  nav.tabs a[aria-current="page"] { color: var(--accent); font-weight: 600; }
+  #toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(76px + env(safe-area-inset-bottom)); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; z-index: 20; max-width: 90%; text-align: center; }
+  [hidden] { display: none !important; }
+  details.how summary { cursor: pointer; color: var(--accent); font-weight: 500; }
+  details.how ol { margin: 10px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brandmark">
+      <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="18" fill="none" stroke="var(--line)" stroke-width="1.8"/>
+        <circle cx="20" cy="20" r="11" fill="none" stroke="var(--line)" stroke-width="1.8"/>
+        <circle cx="20" cy="20" r="4" fill="none" stroke="var(--line)" stroke-width="1.8"/>
+        <path d="M20 20 L34 9" stroke="var(--accent)" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+        <circle cx="29" cy="14" r="2.8" fill="var(--accent)"/>
+      </svg>
+      <h1>Sponsor Radar</h1>
+    </div>
+    <a class="btn small" href="#/settings" aria-label="Settings">Settings</a>
+  </header>
+  <main id="app"></main>
+</div>
+<nav class="tabs" aria-label="Main">
+  <a href="#/scan" data-tab="scan">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 12l6-5"/></svg>Scan</a>
+  <a href="#/brands" data-tab="brands">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Leaderboard</a>
+  <a href="#/creators" data-tab="creators">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Creators</a>
+</nav>
+<div id="toast" role="status" hidden></div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var fmt = function (n) { return Number(n || 0).toLocaleString('en-US'); };
+  var fmtDate = function (d) { try { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return d || ''; } };
+  var fmtMonth = function (d) { try { return new Date(d).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }); } catch (e) { return d || ''; } };
+  var fmtSubs = function (n) {
+    n = +n || 0;
+    if (n >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, '') + 'M';
+    if (n >= 1e3) return (n / 1e3).toFixed(n >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'K';
+    return String(n);
+  };
+  var plural = function (n, one, many) { return fmt(n) + ' ' + (n === 1 ? one : many || one + 's'); };
+  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+
+  /* ---------- storage ---------- */
+  var mem = {};
+  var store = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return mem[k] == null ? null : mem[k]; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { mem[k] = v; return false; } },
+    del: function (k) { try { localStorage.removeItem(k); } catch (e) {} delete mem[k]; }
+  };
+  var data = loadData();
+  var AGG = null;
+  function loadData() {
+    try {
+      var d = JSON.parse(store.get('sr.data') || 'null');
+      if (d && d.creators && typeof d.creators === 'object') return { creators: d.creators, hidden: d.hidden || {} };
+    } catch (e) {}
+    return { creators: {}, hidden: {} };
+  }
+  function saveData() {
+    AGG = null;
+    if (!store.set('sr.data', JSON.stringify(data))) toast('Could not save. Browser storage is blocked or full.');
+  }
+  var getKey = function () { return (store.get('sr.key') || '').trim(); };
+
+  /* ---------- sponsor detection ---------- */
+  var SOCIAL = new Set(['youtube.com', 'youtu.be', 'instagram.com', 'twitter.com', 'x.com', 'tiktok.com', 'facebook.com', 'fb.com', 'fb.me', 'linkedin.com', 'patreon.com', 'discord.gg', 'discord.com', 'threads.net', 'twitch.tv', 'spotify.com', 'ko-fi.com', 'buymeacoffee.com', 'paypal.com', 'paypal.me', 'substack.com', 'medium.com', 'reddit.com', 'pinterest.com', 'snapchat.com', 'whatsapp.com', 't.me', 'telegram.me', 'wa.me', 'github.com', 'amazon.com']);
+  var SHORT = new Set(['bit.ly', 'tinyurl.com', 'geni.us', 'amzn.to', 'amzn.com', 'lnkd.in', 'ow.ly', 'buff.ly', 'rebrand.ly', 't.co', 'goo.gl', 'is.gd', 'cutt.ly', 'shorturl.at', 'tiny.cc', 'dub.sh', 'dub.co', 'lnk.to', 'linktr.ee', 'beacons.ai', 'bio.link', 'link.tree', 'rb.gy', 'short.io']);
+  var GENERIC = new Set(['link', 'links', 'here', 'website', 'site', 'discount', 'offer', 'deal', 'code', 'free', 'trial', 'free trial', 'this', 'that', 'it', 'them', 'our', 'us', 'me', 'my', 'channel', 'subscribe', 'video', 'videos', 'more', 'below', 'above', 'today', 'now', 'sponsor', 'sponsors', 'affiliate', 'partner', 'partners', 'promo', 'coupon', 'youtube', 'newsletter', 'course', 'community', 'join', 'apply', 'book', 'call', 'full', 'the', 'and', 'you', 'your', 'official', 'app', 'ai', 'tool', 'tools', 'pro', 'plus', 'get', 'try', 'use', 'check', 'click', 'download', 'visit', 'learn', 'sign', 'start', 'sponsored', 'thanks', 'thank', 'special', 'huge', 'big', 'new', 'best']);
+  var LEAD = /^[\s:,\-–—|&.!?]*(?:(?:this video (?:is|was) )?(?:sponsored|brought to you|presented|supported|made possible) by|(?:huge |big |special |a big )?thanks? (?:you )?(?:so much )?to|today'?s sponsor(?: is)?|our sponsors?(?: is)?|my sponsors?(?: is)?|sponsors?|sponsored|partnered with|(?:in |paid )?partnership with|try|get started with|get|grab|check out|checkout|check|sign up (?:for|to|with|at)|sign up|signup|start your free trial (?:with|of|at)|start (?:with|using|at)|start|join|use|download|visit|learn more (?:about|at)|learn about|go to|click|see|watch|read|build with|build|work with|book|claim|redeem|free|new|the|an?|my|our|your|with|from|at|on|for|by|and|to|of)\b/i;
+  var SIGNAL = /\b(?:sponsor(?:ed|s|ship)?|paid\s+(?:promotion|partnership)|partnered|partnership\s+with|brought\s+to\s+you|presented\s+by|supported\s+by|affiliate|promo\s*code|coupon|discount|use\s+code|with\s+code|kode\s+promo|free\s+trial|referral)\b/i;
+  var SIGNAL2 = /#(?:ad|sponsored|paidpartnership)\b|\b[Cc]ode\s*[:\-]?\s*["'“(]?[A-Z0-9]{4,}\b|\b\d{1,3}\s*%\s*off\b/;
+  var HEADER = /^[\W_]*(?:our\s+|my\s+|today'?s\s+|this\s+video'?s\s+|video\s+)?(?:sponsors?|partners?|sponsored\s+by|brought\s+to\s+you\s+by|presented\s+by|supported\s+by|thanks\s+to\s+(?:our|my)\s+sponsors?)[\W_]*$/i;
+  var VERB = /(?:sponsored by|brought to you by|presented by|supported by|partnered with|(?:in |paid )?partnership with|sponsors?\s*(?:is|are|:)|thanks to|thank you to|special thanks to)\s*:?\s*(.+)$/i;
+
+  var keyOf = function (n) { return String(n).toLowerCase().replace(/[^a-z0-9]/g, ''); };
+
+  function rootDomain(host) {
+    host = host.toLowerCase().replace(/^www\./, '');
+    var p = host.split('.');
+    if (p.length <= 2) return host;
+    var sl = new Set(['co', 'com', 'org', 'net', 'gov', 'edu', 'ac']);
+    var n = p.length;
+    if (p[n - 1].length === 2 && sl.has(p[n - 2])) return p.slice(-3).join('.');
+    return p.slice(-2).join('.');
+  }
+  function urlInfo(u) {
+    try {
+      var host = new URL(u).hostname;
+      var root = rootDomain(host);
+      return { root: root, social: SOCIAL.has(root), short: SHORT.has(root) };
+    } catch (e) { return null; }
+  }
+  function domainBrand(root) {
+    var l = root.split('.')[0];
+    if (!l || l.length < 3) return '';
+    return l.charAt(0).toUpperCase() + l.slice(1);
+  }
+  function related(root, name) {
+    var a = keyOf(root.split('.')[0]), b = keyOf(name);
+    if (!a || !b) return false;
+    return a.indexOf(b) >= 0 || b.indexOf(a) >= 0 || (a.length >= 4 && b.length >= 4 && a.slice(0, 4) === b.slice(0, 4));
+  }
+  function cleanName(s) {
+    if (!s) return '';
+    s = s.replace(/https?:\/\/\S+/gi, ' ');
+    s = s.replace(/\([^)]*\)|\[[^\]]*\]|\{[^}]*\}/g, ' ');
+    s = s.replace(/[\u{1F000}-\u{1FAFF}\u{2190}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}‍]/gu, ' ');
+    s = s.replace(/[#*_~`>•·▪●■□◆◇►▶]/g, ' ');
+    s = s.replace(/\b(?:use\s+|with\s+|promo\s*)?(?:code|coupon|kode)\b.*$/i, ' ');
+    s = s.replace(/\b\d+\s*%\s*(?:off|discount)?/gi, ' ');
+    for (var i = 0; i < 8; i++) {
+      var m = s.match(LEAD);
+      if (!m || !m[0].trim()) break;
+      s = s.slice(m[0].length);
+    }
+    s = s.replace(/\s+(?:for|who|that|which|so|because|if|when|where)\s+.*$/i, ' ');
+    s = s.split(/\s[-–—]\s|[:|=→!?;,]|\.\s|\s\/\s/)[0] || '';
+    for (var j = 0; j < 4; j++) s = s.replace(/\s+(?:for free|free|now|here|today|link|below|on|at|via|in|to|and|is|are|the|with)\s*$/i, '');
+    s = s.replace(/^[\s.,:;!?\-–—'"“”]+|[\s.,:;!?\-–—'"“”]+$/g, '');
+    var words = s.split(/\s+/);
+    if (!s || words.length > 4 || s.length > 40 || !/[A-Za-z0-9]/.test(s)) return '';
+    if (GENERIC.has(s.toLowerCase())) return '';
+    if (words.length >= 2 && s === s.toLowerCase()) return '';
+    return s;
+  }
+  function findCode(line) {
+    var re = /\b(?:promo(?:\s*code)?|coupon(?:\s*code)?|discount\s*code|use\s*code|with\s*code|code|kode(?:\s*promo)?)\b\s*[:\-–]?\s*["'“”‘’(\[]*\s*([A-Za-z0-9][A-Za-z0-9_-]{2,19})/gi;
+    var m;
+    while ((m = re.exec(line))) {
+      var t = m[1];
+      if ((t === t.toUpperCase() || /\d/.test(t)) && !/^(?:FOR|AND|THE|OFF|YOU|YOUR|WITH|USE|AT|ON)$/i.test(t)) return t;
+    }
+    return '';
+  }
+  function verbNames(line) {
+    var m = line.match(VERB);
+    if (!m) return [];
+    if (/^(?:thank|special thanks)/i.test(m[0]) && !/sponsor|partner/i.test(line)) return [];
+    var rest = m[1].replace(/https?:\/\/\S+/gi, ' ').replace(/\s+(?:for|who|that|which)\s+.*$/i, ' ');
+    return rest.split(/\s*(?:,|\band\b|&|\+|\/)\s*/).map(cleanName).filter(Boolean).slice(0, 3);
+  }
+  function analyze(desc) {
+    var lines = String(desc || '').split(/\r?\n/).map(function (l) { return l.trim(); });
+    var out = [], section = false, secCount = 0;
+    var urlRe = /https?:\/\/[^\s<>"']+/gi;
+    var trim = function (u) { return u.replace(/[)\].,;!?'"»]+$/, ''); };
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      if (!line) { if (section && secCount > 0) section = false; continue; }
+      if (HEADER.test(line)) { section = true; secCount = 0; continue; }
+      var sig = SIGNAL.test(line) || SIGNAL2.test(line);
+      if (!(sig || section)) continue;
+      if (section) secCount++;
+      var code = findCode(line);
+      var urls = [], m;
+      urlRe.lastIndex = 0;
+      while ((m = urlRe.exec(line))) urls.push({ u: trim(m[0]), i: m.index, e: m.index + m[0].length });
+      var prevEnd = 0, found = 0;
+      for (var k = 0; k < urls.length; k++) {
+        var u = urls[k], info = urlInfo(u.u);
+        var seg = line.slice(prevEnd, u.i);
+        prevEnd = u.e;
+        if (!info || info.social) continue;
+        var name = cleanName(seg);
+        if (!name) name = verbNames(line)[0] || '';
+        if (!name && info.short && i > 0 && lines[i - 1] && !/https?:/i.test(lines[i - 1])) name = cleanName(lines[i - 1]);
+        if (!name && !info.short) name = domainBrand(info.root);
+        if (!name) continue;
+        var dom = info.short ? '' : info.root;
+        if (dom && !related(dom, name)) dom = '';
+        out.push({ name: name, domain: dom, code: code });
+        found++;
+      }
+      if (!found) {
+        var vn = verbNames(line);
+        if (vn.length) {
+          var d2 = '';
+          for (var q = i + 1; q <= i + 2 && q < lines.length && !d2; q++) {
+            var mm = lines[q].match(/https?:\/\/[^\s<>"']+/i);
+            if (mm) { var inf = urlInfo(trim(mm[0])); if (inf && !inf.social && !inf.short && related(inf.root, vn[0])) d2 = inf.root; }
+          }
+          vn.forEach(function (n, idx) { out.push({ name: n, domain: idx === 0 ? d2 : '', code: code }); });
+        }
+      }
+    }
+    var seen = new Map();
+    out.forEach(function (h) {
+      h.key = keyOf(h.name);
+      if (!h.key) return;
+      var p = seen.get(h.key);
+      if (!p) seen.set(h.key, h);
+      else { if (!p.code && h.code) p.code = h.code; if (!p.domain && h.domain) p.domain = h.domain; }
+    });
+    return Array.from(seen.values());
+  }
+
+  /* ---------- YouTube API ---------- */
+  async function yt(path, params, attempt) {
+    attempt = attempt || 0;
+    var qs = new URLSearchParams(Object.assign({}, params, { key: getKey() })).toString();
+    var res;
+    try { res = await fetch('https://www.googleapis.com/youtube/v3/' + path + '?' + qs); }
+    catch (e) {
+      if (attempt < 2) { await sleep(800 * (attempt + 1)); return yt(path, params, attempt + 1); }
+      var ne = new Error('Could not reach Google. Check your connection and try again.');
+      ne.network = true; throw ne;
+    }
+    var body = null;
+    try { body = await res.json(); } catch (e) {}
+    if (!res.ok) {
+      if (res.status >= 500 && attempt < 2) { await sleep(800 * (attempt + 1)); return yt(path, params, attempt + 1); }
+      var g = (body && body.error) || {};
+      var err = new Error(g.message || ('HTTP ' + res.status));
+      err.reason = (g.errors && g.errors[0] && g.errors[0].reason) || '';
+      err.status = res.status;
+      throw err;
+    }
+    return body;
+  }
+  function friendly(e) {
+    var r = e.reason || '', m = e.message || '';
+    if (r === 'quotaExceeded' || r === 'dailyLimitExceeded') { e.fatal = true; return 'This key has used up its daily quota. It resets at midnight Pacific Time.'; }
+    if (/API key not valid|keyInvalid/i.test(m + r) || r === 'badRequest') { e.fatal = true; return 'The API key is not valid. Check it in Settings.'; }
+    if (r === 'accessNotConfigured' || /has not been used|is disabled/i.test(m)) { e.fatal = true; return 'YouTube Data API v3 is not enabled for this key. Enable it in Google Cloud, then try again.'; }
+    if (r === 'playlistNotFound') return 'This channel has no public videos.';
+    if (e.network) e.fatal = true;
+    return m;
+  }
+  function parseRef(line) {
+    var s = line.trim(), m;
+    if ((m = s.match(/youtube\.com\/(@[^\/?#\s]+)/i))) return { forHandle: decodeURIComponent(m[1]) };
+    if ((m = s.match(/youtube\.com\/channel\/(UC[\w-]{20,})/i))) return { id: m[1] };
+    if ((m = s.match(/youtube\.com\/user\/([^\/?#\s]+)/i))) return { forUsername: decodeURIComponent(m[1]) };
+    if (/^@[\w.\-]+$/.test(s)) return { forHandle: s };
+    if (/^UC[\w-]{20,}$/.test(s)) return { id: s };
+    return null;
+  }
+
+  var scan = { running: false, pct: 0, msg: '', results: [] };
+  var ui = { sort: 'creators', q: '', cq: '', crq: '', scanInput: '', limit: '2000' };
+
+  async function scanOne(ref, limit) {
+    var p = { part: 'snippet,contentDetails,statistics' };
+    Object.keys(ref).forEach(function (k) { p[k] = ref[k]; });
+    var ch = await yt('channels', p);
+    if (!ch.items || !ch.items.length) throw new Error('Channel not found. Use the @handle link.');
+    var c = ch.items[0];
+    var uploads = c.contentDetails && c.contentDetails.relatedPlaylists && c.contentDetails.relatedPlaylists.uploads;
+    if (!uploads) throw new Error('This channel has no public videos.');
+    var total = +c.statistics.videoCount || limit;
+    var goal = Math.min(limit, total);
+    var title = c.snippet.title;
+    scan.msg = 'Reading ' + title + '…';
+    var videos = [], token = '';
+    do {
+      var q = { part: 'snippet', playlistId: uploads, maxResults: 50 };
+      if (token) q.pageToken = token;
+      var r = await yt('playlistItems', q);
+      (r.items || []).forEach(function (it) {
+        var sn = it.snippet || {};
+        if (!sn.resourceId || !sn.resourceId.videoId) return;
+        videos.push({ id: sn.resourceId.videoId, title: sn.title || '', date: (sn.publishedAt || '').slice(0, 10), desc: sn.description || '' });
+      });
+      token = r.nextPageToken || '';
+      scan.pct = Math.min(100, Math.round(videos.length / Math.max(goal, 1) * 100));
+      scan.msg = 'Reading ' + title + ': ' + fmt(Math.min(videos.length, goal)) + ' of ' + fmt(goal) + ' videos';
+      updateProgress();
+    } while (token && videos.length < limit);
+    videos = videos.slice(0, limit);
+    var handle = c.snippet.customUrl || '';
+    var self = [keyOf(title), keyOf(handle.replace('@', ''))].filter(function (k) { return k.length >= 4; });
+    var hits = [];
+    videos.forEach(function (v) {
+      analyze(v.desc).forEach(function (h) {
+        var dl = h.domain ? keyOf(h.domain.split('.')[0]) : '';
+        if (self.some(function (s) {
+          return h.key.indexOf(s) >= 0 || (dl && dl.indexOf(s) >= 0) ||
+            (h.key.length >= 4 && s.indexOf(h.key) >= 0) || (dl.length >= 4 && s.indexOf(dl) >= 0);
+        })) return;
+        hits.push({ name: h.name, key: h.key, domain: h.domain, code: h.code, v: v.id, t: v.title, d: v.date });
+      });
+    });
+    data.creators[c.id] = {
+      id: c.id, title: title, handle: handle,
+      thumb: (c.snippet.thumbnails && ((c.snippet.thumbnails.default || {}).url)) || '',
+      subs: c.statistics.hiddenSubscriberCount ? 0 : (+c.statistics.subscriberCount || 0),
+      total: total, scanned: videos.length, scannedAt: new Date().toISOString(), hits: hits
+    };
+    saveData();
+    var keys = new Set(hits.map(function (h) { return h.key; }));
+    return { id: c.id, title: title, videos: videos.length, brands: keys.size };
+  }
+  async function runScans(items) {
+    if (scan.running) return;
+    scan = { running: true, pct: 0, msg: 'Starting…', results: [] };
+    refresh();
+    for (var i = 0; i < items.length; i++) {
+      try {
+        var res = await scanOne(items[i].ref, items[i].limit);
+        res.ok = true; scan.results.push(res);
+      } catch (e) {
+        scan.results.push({ ok: false, label: items[i].label, error: friendly(e) });
+        if (e.fatal) break;
+      }
+      scan.pct = 0;
+    }
+    scan.running = false; scan.msg = '';
+    refresh();
+  }
+  function updateProgress() {
+    var b = $('#scanBar'), m = $('#scanMsg');
+    if (b) b.style.width = scan.pct + '%';
+    if (m) m.textContent = scan.msg;
+  }
+  function refresh() { if ((location.hash.replace(/^#\/?/, '').split('/')[0] || 'scan') === 'scan') render(true); }
+
+  /* ---------- aggregate ---------- */
+  function topKey(obj, shortestOnTie) {
+    var best = '', bc = -1;
+    Object.keys(obj).forEach(function (k) {
+      var c = obj[k];
+      if (c > bc || (c === bc && shortestOnTie && k.length < best.length)) { best = k; bc = c; }
+    });
+    return best;
+  }
+  function aggregate() {
+    var map = new Map(), dkey = new Map();
+    var cs = Object.values(data.creators).sort(function (a, b) { return a.id < b.id ? -1 : 1; });
+    cs.forEach(function (c) {
+      c.hits.forEach(function (h) {
+        var key = h.key;
+        if (h.domain) { if (dkey.has(h.domain)) key = dkey.get(h.domain); else dkey.set(h.domain, key); }
+        if (data.hidden[key] || data.hidden[h.key]) return;
+        var b = map.get(key);
+        if (!b) { b = { key: key, names: {}, domains: {}, codes: new Set(), cmap: new Map(), videos: 0, last: '' }; map.set(key, b); }
+        b.names[h.name] = (b.names[h.name] || 0) + 1;
+        if (h.domain) b.domains[h.domain] = (b.domains[h.domain] || 0) + 1;
+        if (h.code) b.codes.add(h.code);
+        var arr = b.cmap.get(c.id);
+        if (!arr) { arr = []; b.cmap.set(c.id, arr); }
+        arr.push(h);
+        b.videos++;
+        if (h.d > b.last) b.last = h.d;
+      });
+    });
+    var brands = Array.from(map.values()).map(function (b) {
+      return { key: b.key, name: topKey(b.names, true), domain: topKey(b.domains, false), codes: Array.from(b.codes), cmap: b.cmap, creatorCount: b.cmap.size, videoCount: b.videos, last: b.last };
+    });
+    var byC = brands.slice().sort(function (a, b) { return (b.creatorCount - a.creatorCount) || (b.videoCount - a.videoCount) || a.name.localeCompare(b.name); });
+    byC.forEach(function (b, i) { b.rankC = i + 1; });
+    var byV = brands.slice().sort(function (a, b) { return (b.videoCount - a.videoCount) || (b.creatorCount - a.creatorCount) || a.name.localeCompare(b.name); });
+    byV.forEach(function (b, i) { b.rankV = i + 1; });
+    return { byC: byC, byV: byV, total: brands.length };
+  }
+  var agg = function () { return AGG || (AGG = aggregate()); };
+  var hiddenCount = function () { return Object.keys(data.hidden).length; };
+
+  /* ---------- views ---------- */
+  var avatar = function (c) {
+    var letter = esc((c.title || '?').trim().charAt(0).toUpperCase());
+    var img = c.thumb ? '<img src="' + esc(c.thumb) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : '';
+    return '<span class="av">' + letter + img + '</span>';
+  };
+  var siteLink = function (b) {
+    return b.domain
+      ? '<a class="chip" href="https://' + esc(b.domain) + '" target="_blank" rel="noopener">' + esc(b.domain) + ' ↗</a>'
+      : '<a class="chip" href="https://www.google.com/search?q=' + encodeURIComponent(b.name + ' official website') + '" target="_blank" rel="noopener">Find website ↗</a>';
+  };
+  var codeChips = function (b) { return b.codes.map(function (c) { return '<span class="chip code">code ' + esc(c) + '</span>'; }).join(''); };
+
+  function viewScan() {
+    var hasKey = !!getKey();
+    var h = '<section class="stack"><div><h2>Scan creators</h2><p class="sub">Reads every video description for sponsors, links and promo codes. Up to 2,000 newest videos per creator.</p></div>';
+    if (!hasKey) {
+      h += '<div class="card"><h3>Add your free YouTube API key</h3><p class="sub">The key is free and stays on this device. Setup takes about 10 minutes, once.</p><a class="btn primary" href="#/settings">Set up API key</a></div>';
+    }
+    h += '<div class="card"><label for="scanInput">Creator links</label>' +
+      '<textarea id="scanInput" rows="3" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="youtube.com/@channelname&#10;One creator per line">' + esc(ui.scanInput) + '</textarea>' +
+      '<label for="scanLimit">Videos to scan</label><select id="scanLimit">' +
+      [['2000', 'All, up to 2,000 videos'], ['500', 'Newest 500'], ['200', 'Newest 200'], ['50', 'Newest 50']].map(function (o) { return '<option value="' + o[0] + '"' + (ui.limit === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') +
+      '</select><button class="btn primary" data-act="scan"' + (scan.running ? ' disabled' : '') + '>' + (scan.running ? 'Scanning…' : 'Scan') + '</button>' +
+      '<div id="scanProg"' + (scan.running ? '' : ' hidden') + ' class="stack"><div class="bar big"><i id="scanBar" style="width:' + scan.pct + '%"></i></div><p class="sub" id="scanMsg">' + esc(scan.msg) + '</p></div></div>';
+    if (scan.results.length) {
+      h += '<div class="stack"><h3>Results</h3>' + scan.results.map(function (r) {
+        return r.ok
+          ? '<a class="item-link" href="#/creator/' + esc(r.id) + '"><div class="main"><div class="name">' + esc(r.title) + '</div><div class="meta">' + plural(r.videos, 'video') + ' scanned · ' + plural(r.brands, 'sponsor') + ' found</div></div><span class="chip">Open</span></a>'
+          : '<div class="card bad">' + esc(r.label ? r.label + ': ' : '') + esc(r.error) + '</div>';
+      }).join('') + '</div>';
+    }
+    var n = Object.keys(data.creators).length;
+    if (n && !scan.results.length) h += '<p class="sub">' + plural(n, 'creator') + ' saved on this device. See the Leaderboard and Creators tabs.</p>';
+    return h + '</section>';
+  }
+
+  function brandRow(b, mode, maxVal) {
+    var rank = mode === 'videos' ? b.rankV : b.rankC;
+    var val = mode === 'videos' ? b.videoCount : b.creatorCount;
+    var creators = Array.from(b.cmap.keys()).map(function (id) { return { c: data.creators[id], n: b.cmap.get(id).length }; })
+      .filter(function (x) { return x.c; }).sort(function (a, b2) { return b2.n - a.n; });
+    return '<details class="item"><summary><span class="rank' + (rank <= 3 ? ' top' : '') + '">' + rank + '</span><div class="main"><div class="name">' + esc(b.name) + '</div>' +
+      '<div class="meta">' + plural(b.creatorCount, 'creator') + ' · ' + plural(b.videoCount, 'video') + '</div>' +
+      '<div class="bar"><i style="width:' + Math.max(4, Math.round(val / Math.max(maxVal, 1) * 100)) + '%"></i></div></div></summary>' +
+      '<div class="detail"><div class="chips">' + siteLink(b) + codeChips(b) + '</div>' +
+      '<div><div class="lbl">Sponsored creators</div><div class="chips">' + creators.map(function (x) { return '<a class="chip" href="#/creator/' + esc(x.c.id) + '">' + esc(x.c.title) + ' · ' + x.n + '</a>'; }).join('') + '</div></div>' +
+      '<div class="row"><button class="btn small" data-act="hide" data-key="' + esc(b.key) + '">Not a sponsor, hide</button></div></div></details>';
+  }
+  function brandListHtml() {
+    var A = agg(), mode = ui.sort, list = mode === 'videos' ? A.byV : A.byC;
+    var q = ui.q.trim().toLowerCase();
+    var maxVal = list.length ? (mode === 'videos' ? list[0].videoCount : list[0].creatorCount) : 1;
+    var rows = list.filter(function (b) {
+      if (!q) return true;
+      if (b.name.toLowerCase().indexOf(q) >= 0) return true;
+      return Array.from(b.cmap.keys()).some(function (id) { var c = data.creators[id]; return c && c.title.toLowerCase().indexOf(q) >= 0; });
+    });
+    if (!rows.length) return '<div class="empty"><span>' + (q ? 'No brand or creator matches “' + esc(ui.q) + '”.' : 'No sponsors found yet.') + '</span></div>';
+    return '<div class="rows">' + rows.map(function (b) { return brandRow(b, mode, maxVal); }).join('') + '</div>';
+  }
+  function viewBrands() {
+    var n = Object.keys(data.creators).length, A = agg();
+    if (!n) return '<section class="stack"><div><h2>Leaderboard</h2><p class="sub">Brands ranked by how many creators they sponsor.</p></div><div class="empty"><b>No brands yet</b><span>Scan a creator and their sponsors will show up here, ranked across every creator you scan.</span><a class="btn primary" href="#/scan">Scan a creator</a></div></section>';
+    var vids = Object.values(data.creators).reduce(function (s, c) { return s + c.scanned; }, 0);
+    return '<section class="stack"><div><h2>Leaderboard</h2><p class="sub">Brands ranked by how many creators they sponsor.</p></div>' +
+      '<div class="stats"><div class="stat"><b>' + fmt(A.total) + '</b><span>Brands</span></div><div class="stat"><b>' + fmt(n) + '</b><span>Creators</span></div><div class="stat"><b>' + fmt(vids) + '</b><span>Videos scanned</span></div></div>' +
+      '<input type="search" id="brandQ" placeholder="Search brand or creator" value="' + esc(ui.q) + '" autocomplete="off">' +
+      '<div class="seg" role="group" aria-label="Rank by"><button data-act="sort" data-v="creators" aria-pressed="' + (ui.sort === 'creators') + '">By creators</button><button data-act="sort" data-v="videos" aria-pressed="' + (ui.sort === 'videos') + '">By videos</button></div>' +
+      '<div id="brandList">' + brandListHtml() + '</div>' +
+      '<div class="row"><button class="btn small" data-act="csv">Download CSV</button>' + (hiddenCount() ? '<button class="btn small" data-act="restore">Restore ' + hiddenCount() + ' hidden</button>' : '') + '</div></section>';
+  }
+
+  function viewCreators() {
+    var cs = Object.values(data.creators).sort(function (a, b) { return a.scannedAt < b.scannedAt ? 1 : -1; });
+    if (!cs.length) return '<section class="stack"><div><h2>Creators</h2><p class="sub">Every creator you have scanned.</p></div><div class="empty"><b>No creators yet</b><span>Scan a creator to see their sponsors and the brands they could still get.</span><a class="btn primary" href="#/scan">Scan a creator</a></div></section>';
+    return '<section class="stack"><div><h2>Creators</h2><p class="sub">Tap a creator to see their sponsors and opportunities.</p></div>' +
+      '<input type="search" id="creatorQ" placeholder="Search creators" value="' + esc(ui.crq) + '" autocomplete="off"><div id="creatorsList">' + creatorsListHtml() + '</div></section>';
+  }
+  function creatorsListHtml() {
+    var q = ui.crq.trim().toLowerCase(), A = agg();
+    var cs = Object.values(data.creators).sort(function (a, b) { return a.scannedAt < b.scannedAt ? 1 : -1; })
+      .filter(function (c) { return !q || c.title.toLowerCase().indexOf(q) >= 0 || (c.handle || '').toLowerCase().indexOf(q) >= 0; });
+    if (!cs.length) return '<div class="empty"><span>No creator matches “' + esc(ui.crq) + '”.</span></div>';
+    return '<div class="rows">' + cs.map(function (c) {
+      var mine = A.byC.filter(function (b) { return b.cmap.has(c.id); });
+      return '<a class="item-link" href="#/creator/' + esc(c.id) + '">' + avatar(c) + '<div class="main"><div class="name">' + esc(c.title) + '</div><div class="meta">' + plural(mine.length, 'sponsor') + ' · ' + plural(c.scanned, 'video') + ' scanned' + (c.subs ? ' · ' + fmtSubs(c.subs) + ' subs' : '') + '</div></div></a>';
+    }).join('') + '</div>';
+  }
+
+  function creatorListHtml(id, tab) {
+    var c = data.creators[id]; if (!c) return '';
+    var A = agg(), q = ui.cq.trim().toLowerCase();
+    var match = function (b) { return !q || b.name.toLowerCase().indexOf(q) >= 0; };
+    if (tab === 'opps') {
+      var opps = A.byC.filter(function (b) { return !b.cmap.has(id); });
+      var rows = opps.filter(match);
+      if (!opps.length) return '<div class="empty"><span>No other brands yet. Scan more creators to grow the leaderboard.</span></div>';
+      if (!rows.length) return '<div class="empty"><span>No brand matches “' + esc(ui.cq) + '”.</span></div>';
+      var maxC = opps[0].creatorCount;
+      return '<div class="rows">' + rows.map(function (b) {
+        var cr = Array.from(b.cmap.keys()).map(function (cid) { return data.creators[cid]; }).filter(Boolean);
+        return '<details class="item"><summary><span class="rank' + (b.rankC <= 3 ? ' top' : '') + '">' + b.rankC + '</span><div class="main"><div class="name">' + esc(b.name) + '</div><div class="meta">Sponsors ' + plural(b.creatorCount, 'creator') + ' · ' + plural(b.videoCount, 'video') + '</div><div class="bar"><i style="width:' + Math.max(4, Math.round(b.creatorCount / maxC * 100)) + '%"></i></div></div></summary>' +
+          '<div class="detail"><div class="chips">' + siteLink(b) + codeChips(b) + '</div><div><div class="lbl">Already sponsors</div><div class="chips">' + cr.map(function (x) { return '<a class="chip" href="#/creator/' + esc(x.id) + '">' + esc(x.title) + '</a>'; }).join('') + '</div></div></div></details>';
+      }).join('') + '</div>';
+    }
+    var mine = A.byC.filter(function (b) { return b.cmap.has(id); }).sort(function (a, b) {
+      return (b.cmap.get(id).length - a.cmap.get(id).length) || (b.last < a.last ? -1 : 1);
+    });
+    var rows2 = mine.filter(match);
+    if (!mine.length) return '<div class="empty"><span>No sponsors were detected in this creator’s video descriptions.</span></div>';
+    if (!rows2.length) return '<div class="empty"><span>No brand matches “' + esc(ui.cq) + '”.</span></div>';
+    return '<div class="rows">' + rows2.map(function (b) {
+      var vs = b.cmap.get(id).slice().sort(function (x, y) { return x.d < y.d ? 1 : -1; });
+      return '<details class="item"><summary><div class="main"><div class="name">' + esc(b.name) + '</div><div class="meta">' + plural(vs.length, 'video') + ' · latest ' + esc(fmtMonth(vs[0].d)) + ' · #' + b.rankC + ' overall</div></div></summary>' +
+        '<div class="detail"><div class="chips">' + siteLink(b) + codeChips(b) + '</div><div><div class="lbl">Videos</div><ul class="vids">' +
+        vs.map(function (v) { return '<li><a href="https://www.youtube.com/watch?v=' + encodeURIComponent(v.v) + '" target="_blank" rel="noopener">' + esc(v.t || v.v) + '</a><span class="d">' + esc(v.d) + '</span></li>'; }).join('') +
+        '</ul></div><div class="row"><button class="btn small" data-act="hide" data-key="' + esc(b.key) + '">Not a sponsor, hide</button></div></div></details>';
+    }).join('') + '</div>';
+  }
+  function viewCreator(id, tabSeg) {
+    var c = data.creators[id];
+    if (!c) return '<div class="empty"><b>Creator not found</b><a class="btn primary" href="#/creators">Back to creators</a></div>';
+    var tab = tabSeg === 'opportunities' ? 'opps' : 'sponsors';
+    var A = agg();
+    var nMine = A.byC.filter(function (b) { return b.cmap.has(id); }).length;
+    var nOpps = A.total - nMine;
+    return '<section class="stack"><a href="#/creators" class="sub" style="text-decoration:none">← All creators</a>' +
+      '<div class="card"><div class="row" style="flex-wrap:nowrap;gap:12px">' + avatar(c) + '<div class="main"><h2 style="margin:0">' + esc(c.title) + '</h2><div class="meta">' +
+      (c.handle ? '<a href="https://www.youtube.com/' + esc(c.handle.charAt(0) === '@' ? c.handle : 'channel/' + c.id) + '" target="_blank" rel="noopener">' + esc(c.handle) + ' ↗</a> · ' : '') +
+      (c.subs ? fmtSubs(c.subs) + ' subs' : '') + '</div></div></div>' +
+      '<div class="meta">' + plural(c.scanned, 'video') + ' scanned of ' + fmt(c.total) + ' · ' + plural(nMine, 'sponsor') + ' · scanned ' + esc(fmtDate(c.scannedAt)) + '</div>' +
+      '<div class="row"><button class="btn small" data-act="rescan" data-id="' + esc(id) + '">Rescan</button><button class="btn small danger" data-act="remove-creator" data-id="' + esc(id) + '" data-confirm="1">Remove creator</button></div></div>' +
+      '<div class="seg" role="tablist"><a href="#/creator/' + esc(id) + '" ' + (tab === 'sponsors' ? 'aria-current="true"' : '') + '>Sponsors · ' + nMine + '</a><a href="#/creator/' + esc(id) + '/opportunities" ' + (tab === 'opps' ? 'aria-current="true"' : '') + '>Opportunities · ' + nOpps + '</a></div>' +
+      (tab === 'opps' ? '<p class="sub">Brands that sponsor other creators in your database but not ' + esc(c.title) + ', ranked by how many creators they sponsor.</p>' : '') +
+      '<input type="search" id="creatorBrandQ" placeholder="Search brand" value="' + esc(ui.cq) + '" autocomplete="off">' +
+      '<div id="creatorBrands" data-id="' + esc(id) + '" data-tab="' + tab + '">' + creatorListHtml(id, tab) + '</div>' +
+      (tab === 'opps' && nOpps ? '<div class="row"><button class="btn small" data-act="copy-opps" data-id="' + esc(id) + '">Copy list</button></div>' : '') + '</section>';
+  }
+
+  function viewSettings() {
+    var key = getKey(), n = Object.keys(data.creators).length;
+    return '<section class="stack"><div><h2>Settings</h2><p class="sub">Everything is stored in this browser on this device only.</p></div>' +
+      '<div class="card"><h3>YouTube API key</h3><p class="sub" id="keyState">' + (key ? '<span class="ok">Key saved on this device.</span> Paste a new one to replace it.' : 'No key saved yet.') + '</p>' +
+      '<label for="keyInput">API key</label><input type="password" id="keyInput" placeholder="Paste your YouTube Data API key" autocomplete="off" spellcheck="false" autocapitalize="off">' +
+      '<button class="btn primary" data-act="save-key">Save and test key</button><p class="sub" id="keyMsg" aria-live="polite"></p>' +
+      '<details class="how"><summary>How to get a free key (about 10 minutes)</summary><ol>' +
+      '<li>Open <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">console.cloud.google.com</a> and sign in with Google.</li>' +
+      '<li>Create a new project, any name.</li>' +
+      '<li>Go to APIs &amp; Services, then Library. Search “YouTube Data API v3” and tap Enable.</li>' +
+      '<li>Go to Credentials, tap Create credentials, then API key. Copy the key.</li>' +
+      '<li>Paste it above. The free quota is 10,000 units per day. Scanning 2,000 videos costs about 40.</li></ol></details></div>' +
+      '<div class="card"><h3>Backup</h3><p class="sub">Browsers can clear stored data. Export a backup now and then. ' + plural(n, 'creator') + ' saved.</p>' +
+      '<div class="row"><button class="btn small" data-act="export"' + (n ? '' : ' disabled') + '>Export backup</button><label class="btn small" for="importFile" style="text-transform:none;letter-spacing:0;font-size:13.5px;color:var(--fg)">Import backup</label></div>' +
+      '<input type="file" id="importFile" accept="application/json,.json" hidden></div>' +
+      '<div class="card"><h3>Data</h3><div class="row">' + (hiddenCount() ? '<button class="btn small" data-act="restore">Restore ' + hiddenCount() + ' hidden brands</button>' : '') +
+      '<button class="btn small danger" data-act="clear-all" data-confirm="1"' + (n ? '' : ' disabled') + '>Delete all scans</button></div></div></section>';
+  }
+
+  /* ---------- router ---------- */
+  var lastHash = null;
+  function render(keep) {
+    var p = location.hash.replace(/^#\/?/, '').split('/');
+    var page = p[0] || 'scan', html;
+    document.querySelectorAll('nav.tabs a').forEach(function (a) {
+      var t = a.dataset.tab, cur = t === page || (t === 'creators' && page === 'creator');
+      if (cur) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    if (page === 'brands') html = viewBrands();
+    else if (page === 'creators') html = viewCreators();
+    else if (page === 'creator') html = viewCreator(p[1], p[2]);
+    else if (page === 'settings') html = viewSettings();
+    else html = viewScan();
+    $('#app').innerHTML = html;
+    if (!keep && lastHash !== location.hash) window.scrollTo(0, 0);
+    lastHash = location.hash;
+  }
+  window.addEventListener('hashchange', function () { ui.cq = ''; render(false); });
+
+  /* ---------- helpers ---------- */
+  var tt;
+  function toast(msg) { var t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(function () { t.hidden = true; }, 2800); }
+  async function copyText(text, ok) {
+    try { await navigator.clipboard.writeText(text); toast(ok || 'Copied'); }
+    catch (e) {
+      var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast(ok || 'Copied'); } catch (e2) { toast('Copy failed'); }
+      ta.remove();
+    }
+  }
+  function download(name, text, type) {
+    var blob = new Blob([text], { type: type }), url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 3000);
+  }
+  var today = function () { return new Date().toISOString().slice(0, 10); };
+
+  /* ---------- events ---------- */
+  document.addEventListener('click', async function (e) {
+    var el = e.target.closest('[data-act]');
+    if (!el || el.disabled) return;
+    var act = el.dataset.act;
+    if (el.dataset.confirm && !el.classList.contains('armed')) {
+      el.dataset.label = el.textContent; el.textContent = 'Tap again to confirm'; el.classList.add('armed');
+      setTimeout(function () { if (el.isConnected && el.classList.contains('armed')) { el.textContent = el.dataset.label; el.classList.remove('armed'); } }, 4000);
+      return;
+    }
+    if (act === 'scan') {
+      var ta = $('#scanInput'); ui.scanInput = ta.value; ui.limit = $('#scanLimit').value;
+      if (!getKey()) { toast('Add your API key first.'); location.hash = '#/settings'; return; }
+      var lines = ta.value.split(/\n+/).map(function (l) { return l.trim(); }).filter(Boolean);
+      if (!lines.length) { toast('Paste at least one creator link.'); return; }
+      var items = [], bad = [];
+      lines.forEach(function (l) { var r = parseRef(l); if (r) items.push({ ref: r, limit: +ui.limit, label: l }); else bad.push(l); });
+      if (bad.length) { toast('Not recognised: ' + bad[0] + '. Use youtube.com/@handle.'); if (!items.length) return; }
+      runScans(items);
+    } else if (act === 'save-key') {
+      var v = $('#keyInput').value.trim(), msg = $('#keyMsg');
+      if (!v) { msg.textContent = 'Paste a key first.'; return; }
+      store.set('sr.key', v); msg.textContent = 'Testing…';
+      try { await yt('channels', { part: 'id', forHandle: '@YouTube' }); msg.innerHTML = '<span class="ok">Key works. You can scan now.</span>'; $('#keyState').innerHTML = '<span class="ok">Key saved on this device.</span> Paste a new one to replace it.'; $('#keyInput').value = ''; }
+      catch (er) { msg.innerHTML = '<span class="bad">' + esc(friendly(er)) + '</span>'; }
+    } else if (act === 'sort') { ui.sort = el.dataset.v; render(true); }
+    else if (act === 'hide') { data.hidden[el.dataset.key] = true; saveData(); render(true); toast('Hidden. Restore it from the Leaderboard or Settings.'); }
+    else if (act === 'restore') { data.hidden = {}; saveData(); render(true); toast('Hidden brands restored'); }
+    else if (act === 'csv') {
+      var A = agg(), q = function (s) { return '"' + String(s).replace(/"/g, '""') + '"'; };
+      var rows = ['rank,brand,website,creators,videos,codes,creator_names'].concat(A.byC.map(function (b) {
+        var names = Array.from(b.cmap.keys()).map(function (id) { return data.creators[id] ? data.creators[id].title : ''; }).join('; ');
+        return [b.rankC, q(b.name), q(b.domain), b.creatorCount, b.videoCount, q(b.codes.join('; ')), q(names)].join(',');
+      }));
+      download('sponsor-leaderboard-' + today() + '.csv', rows.join('\n'), 'text/csv');
+      toast('CSV downloaded');
+    } else if (act === 'rescan') {
+      ui.scanInput = 'https://www.youtube.com/channel/' + el.dataset.id; ui.limit = '2000';
+      location.hash = '#/scan';
+      setTimeout(function () { runScans([{ ref: { id: el.dataset.id }, limit: 2000, label: el.dataset.id }]); }, 50);
+    } else if (act === 'remove-creator') { delete data.creators[el.dataset.id]; saveData(); location.hash = '#/creators'; toast('Creator removed'); }
+    else if (act === 'copy-opps') {
+      var id = el.dataset.id, lst = agg().byC.filter(function (b) { return !b.cmap.has(id); });
+      copyText(lst.map(function (b, i) { return (i + 1) + '. ' + b.name + ' (' + plural(b.creatorCount, 'creator') + (b.domain ? ', ' + b.domain : '') + ')'; }).join('\n'), 'List copied');
+    } else if (act === 'export') {
+      download('sponsor-radar-backup-' + today() + '.json', JSON.stringify(data), 'application/json');
+      toast('Backup downloaded');
+    } else if (act === 'clear-all') { data = { creators: {}, hidden: {} }; saveData(); render(true); toast('All scans deleted'); }
+  });
+  document.addEventListener('input', function (e) {
+    var t = e.target;
+    if (t.id === 'brandQ') { ui.q = t.value; $('#brandList').innerHTML = brandListHtml(); }
+    else if (t.id === 'creatorQ') { ui.crq = t.value; $('#creatorsList').innerHTML = creatorsListHtml(); }
+    else if (t.id === 'creatorBrandQ') { ui.cq = t.value; var box = $('#creatorBrands'); box.innerHTML = creatorListHtml(box.dataset.id, box.dataset.tab); }
+    else if (t.id === 'scanInput') ui.scanInput = t.value;
+  });
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (t.id === 'scanLimit') ui.limit = t.value;
+    else if (t.id === 'importFile' && t.files && t.files[0]) {
+      var r = new FileReader();
+      r.onload = function () {
+        try {
+          var d = JSON.parse(r.result);
+          if (!d || typeof d.creators !== 'object') throw new Error('bad');
+          data = { creators: d.creators, hidden: d.hidden || {} }; saveData(); render(true);
+          toast('Imported ' + plural(Object.keys(data.creators).length, 'creator'));
+        } catch (er) { toast('That file is not a Sponsor Radar backup.'); }
+      };
+      r.readAsText(t.files[0]);
+    }
+  });
+
+  render(false);
+})();
+</script>
+</body>
+</html>
